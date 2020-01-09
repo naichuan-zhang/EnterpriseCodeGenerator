@@ -29,21 +29,113 @@ nres_letter = ""
 root = tkinter.Tk()
 
 
+# generate 6-digit anti-counterfeiting code (type 213563)
 def scode1(choice):
+    codes = []
     count = input_box("\033[1;32m     Please enter the number of codes you want to generate: \33[0m", 1, 0)     # only digits, no digit limits
-    pass
+    while count == "0":
+        count = input_box("\033[1;32m     Please enter the number of codes you want to generate: \33[0m", 1, 0)  # only digits, no digit limits
+
+    print(f'{count} 6-digit code is generating ...')
+    while len(codes) != int(count):
+        code = ''
+        for i in range(6):
+            code = code + random.choice(number)
+        code = code + '\n'
+        if code not in codes:
+            codes.append(code)
+
+    wfile(codes, "scodes" + str(choice) + ".txt", "", f"{count} number of 6-digit codes has been generated", "codepath")
 
 
+# Generate 9-bit series of digital anti-counterfeiting code (879-335439 type)
 def scode2(choice):
-    pass
+    codes = []
+    series = input_box("\033[1;32m     Please enter the first three digits of your product series: \33[0m", 3, 3)
+    while series == "0":
+        series = input_box("\033[1;32m     Please enter the first three digits of your product series: \33[0m", 3, 3)
+
+    count = input_box("\033[1;32m     Please enter the number of codes you want to generate: \33[0m", 1, 0)
+    while count == "0":
+        count = input_box("\033[1;32m     Please enter the number of codes you want to generate: \33[0m", 1, 0)
+
+    while len(codes) != int(count):
+        part = series + "-"
+        for i in range(6):
+            part = part + random.choice(number)
+        part += "\n"
+        if part not in codes:
+            codes.append(part)
+
+    wfile(codes, "scodes" + str(choice) + ".txt", "", f"{count} number of 9-digit series number has been generated", "codepath")
 
 
+# Generate 25-bit hybrid serial number (B2R12-N7TE8-9IET2-FE35O-DW2K4)
 def scode3(choice):
-    pass
+    codes = []
+    count = input_box("\033[1;32m     Please enter the number of codes you want to generate: \33[0m", 1, 0)
+    while count == "0":
+        count = input_box("\033[1;32m     Please enter the number of codes you want to generate: \33[0m", 1, 0)
+
+    while len(codes) != int(count):
+        parts = []      # save five parts of hybrid serial code separately
+
+        for i in range(5):
+            part = ""
+            for j in range(5):
+                part = part + random.choice(letter)
+            parts.append(part)
+
+        code = ""
+        for i in range(len(parts)):
+            if i != 0:
+                code = code + "-" + parts[i]
+            else:
+                code = code + parts[i]
+        code += '\n'
+        if code not in codes:
+            codes.append(code)
+
+    wfile(codes, "scodes" + str(choice) + ".txt", "", f"{count} number of 25-bit hybrid serial number has been generated", "codepath")
 
 
+# Generate anti-counterfeiting code with data analysis function (5A61M0583D2)
 def scode4(param, choice):
-    pass
+    codes = []
+    type = input_box("\033[1;32m     Please enter three letters for data analysis: \33[0m", 2, 3)
+    while not type.isalpha() or len(type) != 3:
+        type = input_box("\033[1;32m     Please enter three letters for data analysis: \33[0m", 2, 3)
+
+    count = input_box("\033[1;32m     Please enter the number of codes you want to generate: \33[0m", 1, 0)
+    while count == "0":
+        count = input_box("\033[1;32m     Please enter the number of codes you want to generate: \33[0m", 1, 0)
+
+    while len(codes) != int(count):
+        # generate 6-digit anti-counterfeiting code (type 213563)
+        part1 = ""
+        for i in range(6):
+            part1 = part1 + random.choice(number)
+        # separate type in three letters
+        region = type[0].upper()
+        color = type[1].upper()
+        time = type[2].upper()
+
+        pos_region = 0
+        pos_color = 0
+        pos_time = 0
+        while not pos_region < pos_color < pos_time:
+            pos_region = random.randint(0, 6)
+            pos_color = random.randint(0, 6)
+            pos_time = random.randint(0, 6)
+
+        code = part1[0:pos_region] + region + part1[pos_region:pos_color] + \
+               color + part1[pos_color:pos_time] + time + part1[pos_time:] + '\n'
+
+        if code not in codes:
+            codes.append(code)
+
+    wfile(codes, "scodes" + str(choice) + ".txt", "", f"{count} number of anti-counterfeiting code with data analysis "
+                                                      f"function has been generated", "codepath")
 
 
 def scode5(choice):
@@ -128,7 +220,7 @@ def input_box(showstr, showorder, length):
         elif showorder == 3:        # check if digits with limits
             if instr.isdigit():
                 if len(instr) != length:
-                    print("\033[1;31;40m" + length + " letters is required, please try again!!!\033[0m")
+                    print("\033[1;31;40m" + str(length) + " letters is required, please try again!!!\033[0m")
                     return "0"
                 else:
                     return instr
@@ -175,35 +267,35 @@ def mainmenu():
                                     Enterprise coding generation system
       *********************************************************************************************
           1. Generate 6-digit anti-counterfeiting code (type 213563)
-          2. Generating 9-bit series of digital anti-counterfeiting code (879-335439 type)
-          3. Generating 25-bit hybrid serial number (B2R12-N7TE8-9IET2-FE35O-DW2K4)
+          2. Generate 9-bit series of digital anti-counterfeiting code (879-335439 type)
+          3. Generate 25-bit hybrid serial number (B2R12-N7TE8-9IET2-FE35O-DW2K4)
           4. Generate anti-counterfeiting code with data analysis function (5A61M0583D2)
-          5.Intelligent batch generation with data analysis function of anti-counterfeiting code
+          5. Intelligent batch generation with data analysis function of anti-counterfeiting code
           6. Subsequent supplement spawning anti-counterfeiting code (5A61M0583D2)
-          7.EAN-13 barcode batch generation
+          7. EAN-13 barcode batch generation
           8. 2D Code Bulk Output          
           9. Corporate Fan Anti-counterfeiting Code Sweepstakes
           0. Exit the system
       ==============================================================================================
-      Description: Select a menu with a number key
+          Description: Select a menu with a number
       ==============================================================================================
     \033[0m""")
 
 
 def validate(choice):
     if choice.isdigit():
-        if choice == 0:
-            print_err()
-            return 0
-        else:
-            return choice
+        # if int(choice) == 0:
+        #     print_err()
+        #     return 0
+        # else:
+        return int(choice)
     else:
         print_err()
         return 0
 
 
 if __name__ == '__main__':
-    while i < 9:
+    while True:
         mainmenu()
         choice = input("\033[1;32m     Please enter a number between 0 to 9: \33[0m")
         if choice is not "":
@@ -227,8 +319,8 @@ if __name__ == '__main__':
             if choice == 9:
                 scode9(choice)
             if choice == 0:       # exit the program
-                i = 0
                 print("Exiting the program ...")
+                break
         else:
             print_err()
             time.sleep(2)
