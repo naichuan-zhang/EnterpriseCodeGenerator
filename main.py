@@ -101,7 +101,6 @@ def scode3(choice):
 
 # Generate anti-counterfeiting code with data analysis function (5A61M0583D2)
 def scode4(param, choice):
-    codes = []
     type = input_box("\033[1;32m     Please enter three letters for data analysis: \33[0m", 2, 3)
     while not type.isalpha() or len(type) != 3:
         type = input_box("\033[1;32m     Please enter three letters for data analysis: \33[0m", 2, 3)
@@ -110,6 +109,43 @@ def scode4(param, choice):
     while count == "0":
         count = input_box("\033[1;32m     Please enter the number of codes you want to generate: \33[0m", 1, 0)
 
+    ffcode(count, type, "", choice)
+
+
+# Intelligent batch generation with data analysis function of anti-counterfeiting code
+def scode5(choice):
+    default_dir = r"codeauto.znc"       # default filename to open
+    file_path = tkinter.filedialog.askopenfilename(initialdir=(os.path.expanduser(default_dir)),
+                                                   title="Open file",
+                                                   filetypes=[("Text file", "*.znc")])
+    codelist = open_file(file_path)
+    if codelist is not None:
+        codelist = codelist.split('\n')
+        print(codelist)
+        for item in codelist:
+            codea = item.split(',')[0]      # three letters
+            codeb = item.split(',')[1]      # number of codes to generate
+            ffcode(codeb, codea, "no", choice)
+
+
+def scode6(choice):
+    pass
+
+
+def scode7(choice):
+    pass
+
+
+def scode8(choice):
+    pass
+
+
+def scode9(choice):
+    pass
+
+
+def ffcode(count, type, ismessage, choice):
+    codes = []
     while len(codes) != int(count):
         # generate 6-digit anti-counterfeiting code (type 213563)
         part1 = ""
@@ -134,28 +170,8 @@ def scode4(param, choice):
         if code not in codes:
             codes.append(code)
 
-    wfile(codes, "scodes" + str(choice) + ".txt", "", f"{count} number of anti-counterfeiting code with data analysis "
-                                                      f"function has been generated", "codepath")
-
-
-def scode5(choice):
-    pass
-
-
-def scode6(choice):
-    pass
-
-
-def scode7(choice):
-    pass
-
-
-def scode8(choice):
-    pass
-
-
-def scode9(choice):
-    pass
+    wfile(codes, type + str(choice) + ".txt", ismessage, f"{count} number of anti-counterfeiting code with data "
+                                                             f"analysis function has been generated", "codepath")
 
 
 def wfile(sstr, sfile, typeis, smsg, datapath):
@@ -210,7 +226,7 @@ def input_box(showstr, showorder, length):
         elif showorder == 2:
             if instr.isalpha():     # check if only letters
                 if len(instr) != length:
-                    print("\033[1;31;40m" + length + " letters is required, please try again!!!\033[0m")
+                    print("\033[1;31;40m" + str(length) + " letters is required, please try again!!!\033[0m")
                     return "0"
                 else:
                     return instr
