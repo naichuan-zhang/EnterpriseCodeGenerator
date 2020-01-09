@@ -1,30 +1,21 @@
 import os
 import random
-import string
 import time
-
-import qrcode
 import tkinter
+import qrcode
+
+from string import digits
 from tkinter import messagebox
 from tkinter import filedialog
+from pystrich.ean13 import EAN13Encoder     # barcode generator
+
 
 number = "1234567890"
 letter = "ABCDEFGHIJKLMNPQRSTUVWXYZ1234567890"
 allis = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()_+"
 i = 0
-
 randstr = []
-fourth = []
-fifth = []
-randfir = ""
-randsec = ""
-randthr = ""
-str_one = ""
-strone = ""
-strtwo = ""
-nextcard = ""
-userput = ""
-nres_letter = ""
+
 
 root = tkinter.Tk()
 
@@ -109,7 +100,7 @@ def scode4(param, choice):
     while count == "0":
         count = input_box("\033[1;32m     Please enter the number of codes you want to generate: \33[0m", 1, 0)
 
-    ffcode(count, type, "", choice)
+    ffcode(count, type, "", choice, "codepath")
 
 
 # Intelligent batch generation with data analysis function of anti-counterfeiting code
@@ -125,26 +116,108 @@ def scode5(choice):
         for item in codelist:
             codea = item.split(',')[0]      # three letters
             codeb = item.split(',')[1]      # number of codes to generate
-            ffcode(codeb, codea, "no", choice)
+            ffcode(codeb, codea, "no", choice, "codebatch")
+
+    root.withdraw()
 
 
+# Subsequent supplement spawning anti-counterfeiting code (5A61M0583D2)
 def scode6(choice):
-    pass
+    default_dir = "default.txt"
+    file_path = tkinter.filedialog.askopenfilename(initialdir=(os.path.expanduser(default_dir)),
+                                                   title="Open file")
+
+    codelist = open_file(file_path)
+    codelist = codelist.split('\n')
+    codelist.remove("")
+    strset = codelist[0]
+    print(strset)
+    remove_digits = strset.maketrans("", "", digits)
+    print(remove_digits)
+
+    root.withdraw()
 
 
+# EAN-13 barcode batch generation
 def scode7(choice):
-    pass
+    codes = []
+    country_id = input_box("\033[1;32m     Please enter the 3-digit country id: \33[0m", 1, 0)
+    while len(country_id) != 3 or int(country_id) < 1:
+        country_id = input_box("\033[1;32m     Please enter the 3-digit country id: \33[0m", 1, 0)
+
+    company_id = input_box("\033[1;32m     Please enter the 4-digit company id: \33[0m", 1, 0)
+    while len(company_id) != 4 or int(country_id) < 1:
+        company_id = input_box("\033[1;32m     Please enter the 4-digit company id: \33[0m", 1, 0)
+
+    count = input_box("\033[1;32m     Please enter the number of codes you want to generate: \33[0m", 1, 0)
+    while count == "0":
+        count = input_box("\033[1;32m     Please enter the number of codes you want to generate: \33[0m", 1, 0)
+
+    mkdir("barcode")
+    while len(codes) != int(count):
+        code = country_id + company_id
+        part = ""
+        for i in range(5):
+            part = part + random.choice(number)
+        code = code + part
+        # calc the last digit of code
+        even_sum = int(code[1]) + int(code[3]) + int(code[5]) + int(code[7]) + int(code[9]) + int(code[11])
+        odd_sum = int(code[0]) + int(code[2]) + int(code[4]) + int(code[6]) + int(code[8]) + int(code[10])
+        check_bit = (even_sum * 3 + odd_sum) % 10
+        check_bit = (10 - check_bit) % 10
+        code = code + str(check_bit)
+
+        if code not in codes:
+            codes.append(code)
+
+    # generate barcode
+    for code in codes:
+        encoder = EAN13Encoder(code)
+        encoder.save("barcode\\" + code + ".jpg")
 
 
+# 2-dimensional barcode generation - QR code
 def scode8(choice):
-    pass
+    count = input_box("\033[1;32m     Please enter the number of QR codes you want to generate: \33[0m", 1, 0)
+    while count == "0":
+        count = input_box("\033[1;32m     Please enter the number of QR codes you want to generate: \33[0m", 1, 0)
+
+    mkdir("qrcode")
+    for i in range(int(count)):
+        code = ""
+        for j in range(12):         # 12 digits for each qr code
+            code = code + random.choice(number)
+
+        encoder = qrcode.make(code)
+        encoder.save("qrcode\\" + code + ".jpg")
 
 
+# draw a lottery
 def scode9(choice):
-    pass
+    default_dir = r"lottery.ini"
+    file_path = tkinter.filedialog.askopenfilename(initialdir=(os.path.expanduser(default_dir)),
+                                                   title="Open file",
+                                                   filetypes=[("Ini file", "*.ini")])
+    codelist = open_file(file_path)
+    root.withdraw()         # withdraw the filedialog
+
+    codelist.split("\n")
+
+    count = input_box("\033[1;32m     Please enter the number of lotteries you want to generate: \33[0m", 1, 0)
+    while count == "0" or len(codelist) < int(count):
+        count = input_box("\033[1;32m     Please enter the number of lotteries you want to generate: \33[0m", 1, 0)
+
+    lottery = random.sample(codelist, int(count))
+
+    print("\n\n\033[1;38m     Lottery information shown as follows: \33[0m")
+
+    for i in range(int(count)):
+        wdata = str(lottery[i].replace('[', '')).replace(']', '')
+        wdata = wdata.replace(''''', '').replace(''''', '')
+        print("\033[1;32m     "+ wdata +" \33[0m")
 
 
-def ffcode(count, type, ismessage, choice):
+def ffcode(count, type, ismessage, choice, path):
     codes = []
     while len(codes) != int(count):
         # generate 6-digit anti-counterfeiting code (type 213563)
@@ -171,7 +244,7 @@ def ffcode(count, type, ismessage, choice):
             codes.append(code)
 
     wfile(codes, type + str(choice) + ".txt", ismessage, f"{count} number of anti-counterfeiting code with data "
-                                                             f"analysis function has been generated", "codepath")
+                                                             f"analysis function has been generated", path)
 
 
 def wfile(sstr, sfile, typeis, smsg, datapath):
@@ -289,8 +362,8 @@ def mainmenu():
           5. Intelligent batch generation with data analysis function of anti-counterfeiting code
           6. Subsequent supplement spawning anti-counterfeiting code (5A61M0583D2)
           7. EAN-13 barcode batch generation
-          8. 2D Code Bulk Output          
-          9. Corporate Fan Anti-counterfeiting Code Sweepstakes
+          8. 2-dimensional barcode generation - QR Code         
+          9. Draw a lottery
           0. Exit the system
       ==============================================================================================
           Description: Select a menu with a number
@@ -300,10 +373,6 @@ def mainmenu():
 
 def validate(choice):
     if choice.isdigit():
-        # if int(choice) == 0:
-        #     print_err()
-        #     return 0
-        # else:
         return int(choice)
     else:
         print_err()
@@ -336,7 +405,8 @@ if __name__ == '__main__':
                 scode9(choice)
             if choice == 0:       # exit the program
                 print("Exiting the program ...")
-                break
+                time.sleep(2)
+                exit(0)
         else:
             print_err()
             time.sleep(2)
